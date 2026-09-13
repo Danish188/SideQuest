@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>SideQuest | Find Something Worth Doing</title>
+    <meta
+      name="description"
+      content="Bored? SideQuest gives you quick, personalized challenges based on your time, mood and situation."
+    />
+    <link rel="canonical" href="https://sidequest.danishelahi.com/" />
+    <meta name="theme-color" content="#0B0B0F" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F7F5F0" media="(prefers-color-scheme: light)" />
+    <meta name="author" content="Danish Elahi" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SideQuest" />
+    <meta property="og:url" content="https://sidequest.danishelahi.com/" />
+    <meta property="og:title" content="SideQuest | Find Something Worth Doing" />
+    <meta
+      property="og:description"
+      content="Bored? SideQuest gives you quick, personalized challenges based on your time, mood and situation."
+    />
+    <meta property="og:image" content="https://sidequest.danishelahi.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SideQuest: find something worth doing." />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SideQuest | Find Something Worth Doing" />
+    <meta
+      name="twitter:description"
+      content="Bored? SideQuest gives you quick, personalized challenges based on your time, mood and situation."
+    />
+    <meta name="twitter:image" content="https://sidequest.danishelahi.com/og-image.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Applied before paint so the first frame is already in the right theme.
+      (function () {
+        try {
+          var stored = localStorage.getItem('sidequest:theme');
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {
+          /* first paint falls back to the dark class on <html> */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.tsbuildinfo
+
+# Deploy tooling
+# .wrangler holds Cloudflare's local state and a fresh temp bundle per dev run,
+# so it grows every time the Pages functions are served locally.
+.wrangler
+.vercel
+
+# Secrets. .env.example is deliberately not ignored: it is the template.
+.env
+.env.local
+.env.*.local
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
+
+# Claude Code: launch.json is shared config, settings.local.json is per-machine.
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Logs and scratch
+*.log
+*.local

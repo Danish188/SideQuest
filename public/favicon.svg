@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="SideQuest">
+  <!-- The companion's face, knocked out of the tile. Proportions follow the mascot. -->
+  <rect width="32" height="32" rx="9" fill="#5C3AE8"/>
+  <rect x="6.5" y="7" width="19" height="18.5" rx="8" fill="#fff"/>
+  <g fill="#5C3AE8">
+    <ellipse cx="12.4" cy="14.8" rx="2.5" ry="3"/>
+    <ellipse cx="19.6" cy="14.8" rx="2.5" ry="3"/>
+  </g>
+  <path d="M13.2 20.4 q2.8 2.6 5.6 0" fill="none" stroke="#5C3AE8" stroke-width="1.9" stroke-linecap="round"/>
+</svg>
