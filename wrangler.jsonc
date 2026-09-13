@@ -11,9 +11,11 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    // Client-side routing: a deep link with no file behind it gets index.html
-    // rather than a 404. This replaces what Pages did natively.
-    "not_found_handling": "single-page-application"
+    // Left as "none" on purpose. "single-page-application" would serve index.html
+    // for every miss, including a missing /assets/*.js, which hands the browser
+    // HTML where it expects a module and blanks the page. worker/index.ts does the
+    // SPA fallback instead, for document requests only.
+    "not_found_handling": "none"
   },
   "observability": {
     "enabled": true

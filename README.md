@@ -353,8 +353,16 @@ Vite plugin, which requires Vite 6 or newer. On Vite 5 that fails the build with
 Vite used in the project cannot be automatically configured". Declaring `main` and `assets`
 explicitly means wrangler deploys what the file says and never takes that path.
 
-**Client-side routing** is handled by `assets.not_found_handling: "single-page-application"`, so a
-deep link such as `/history` gets `index.html` rather than a 404.
+**Client-side routing** is handled in `worker/index.ts`, not by
+`assets.not_found_handling: "single-page-application"`, and that distinction matters. The built-in
+SPA mode serves `index.html` for *every* path with no file behind it, including `/assets/*.js`. A
+browser that asks for a bundle which is not there, because it is mid-deploy or holding a stale
+page, then receives HTML with a `200` and `text/html`, refuses to execute it as a module, and
+renders nothing. Because `index.html` ships with `class="dark"` so the first paint is already
+themed, the result is a black screen with nothing useful in the console.
+
+So `not_found_handling` is left at `"none"` and the Worker does the fallback itself, for document
+requests only. A deep link such as `/history` gets `index.html`; a missing asset gets a real 404.
 
 **Note on Pages Functions.** A `functions/` directory is a Cloudflare **Pages** convention. It is
 read by `wrangler pages deploy` and ignored completely by a Worker deployment, so routing here is
