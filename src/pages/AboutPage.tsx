@@ -29,9 +29,9 @@ export function AboutPage() {
         </p>
 
         <p>
-          Recommendations run in your browser by default, using a local scoring engine over that
-          catalogue. You can switch on AI quests in Stats to have one written for your exact answers
-          instead, and if that is ever slow or unavailable the catalogue quietly takes over.
+          Each quest is written for your exact answers, so it has never existed before. If that is
+          ever slow or unavailable, a local scoring engine picks from the catalogue instead and you
+          carry on without noticing.
         </p>
 
         <p>

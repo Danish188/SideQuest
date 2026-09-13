@@ -7,8 +7,6 @@ export interface QuestRequest {
   recentIds: string[];
   /** Quests the user already finished, deprioritised but not banned forever. */
   completedIds: string[];
-  /** Whether the user has opted into AI-generated quests. */
-  preferAi?: boolean;
   /** Titles of recent quests. The model has no idea what our ids mean. */
   recentTitles?: string[];
 }

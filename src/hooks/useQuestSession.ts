@@ -222,7 +222,6 @@ export function useQuestSession(): QuestSession {
           preferences,
           recentIds: state.recentlyShown,
           completedIds: state.completed.map((record) => record.questId),
-          preferAi: state.settings.aiQuests,
           recentTitles: store.recentTitles,
         })
         .then((next) => {
@@ -264,16 +263,16 @@ export function useQuestSession(): QuestSession {
       settleTo,
       state.completed,
       state.recentlyShown,
-      state.settings.aiQuests,
       store.recentTitles,
     ],
   );
 
   /**
-   * Puts the question on screen. With AI enabled it asks the model to write one
-   * about what was actually rejected, and quietly uses the written fallback if that
-   * is slow, unavailable, or returns something unusable. The companion must never
-   * be left mid-outburst with nothing to say.
+   * Puts the question on screen, then asks the model to write a better one about
+   * what was actually rejected, quietly keeping the written fallback if that is
+   * slow, unavailable, or returns something unusable. The companion must never be
+   * left mid-outburst with nothing to say, which is why the written one shows from
+   * the first frame rather than after the request settles.
    */
   const ask = useCallback(
     async (fallback: MascotQuestion) => {
@@ -282,8 +281,6 @@ export function useQuestSession(): QuestSession {
       setMascotState('curious');
       setSpeech(null);
       setQuestion(fallback);
-
-      if (!state.settings.aiQuests) return;
 
       const generated = await fetchCompanionQuestion({
         rejectedCount: rerolls.current,
@@ -294,7 +291,7 @@ export function useQuestSession(): QuestSession {
       // Only swap it in if the user is still looking at the question.
       if (generated) setQuestion((current) => (current?.id === fallback.id ? generated : current));
     },
-    [clearTimers, state.preferences, state.settings.aiQuests],
+    [clearTimers, state.preferences],
   );
 
   const startConfiguring = useCallback(() => {

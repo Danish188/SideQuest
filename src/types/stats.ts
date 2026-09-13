@@ -10,8 +10,6 @@ export interface StreakState {
 export interface AppSettings {
   /** Ask "did you actually do it?" before a quest counts. On by default. */
   confirmCompletion: boolean;
-  /** Ask the model for a bespoke quest instead of drawing from the catalogue. */
-  aiQuests: boolean;
 }
 
 export interface QuestState {

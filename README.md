@@ -109,7 +109,7 @@ flowchart TD
     store --> storage
     store --> stats
     storage --> ls
-    ai -->|"POST /api/quest"| fn["serverless function<br/><i>holds the API key</i>"]
+    ai -->|"POST /api/quest"| fn["worker/index.ts<br/><i>holds the API key</i>"]
     fn -->|"HTTPS"| model[("gpt-4o-mini")]
 ```
 
@@ -146,8 +146,8 @@ src/
   utils/        format · random
 
 server/           generateQuest.ts, shared by both adapters below
+worker/index.ts   Cloudflare Worker: routes /api/quest, serves dist
 api/quest.ts      Vercel adapter
-functions/api/    Cloudflare Pages adapter
 ```
 
 A rough rule: `engine/` and `services/` contain no React, `components/` contain no business logic,
@@ -247,33 +247,32 @@ render.
 
 ## AI quests
 
-Switching on **AI-generated quests** in Stats routes the request to a model instead of the
-catalogue. It returns a quest that has never existed before, shaped to your exact four answers, plus
-one line for the companion to say about it.
+Every draw asks a model for a quest that has never existed before, shaped to your exact four
+answers, plus one line for the companion to say about it. There is no setting: it is simply how the
+app works, and the catalogue sits underneath as the floor.
 
 **The key never reaches the browser.** A static site cannot hold a secret, so the page only ever
-talks to its own `/api/quest` endpoint. The serverless function behind it holds the key and calls
-the provider. Two adapters ship, `api/quest.ts` for Vercel and `functions/api/quest.ts` for
-Cloudflare Pages, and both are three lines over the same `server/generateQuest.ts`, which is written
-against `fetch` rather than a provider SDK so one file runs unchanged on Node and on Workers. The
-backend has zero dependencies.
+talks to its own `/api/quest` endpoint. The server behind it holds the key and calls the provider.
+Two adapters ship, `worker/index.ts` for Cloudflare and `api/quest.ts` for Vercel, and both are a
+few lines over the same `server/generateQuest.ts`, which is written against `fetch` rather than a
+provider SDK so one file runs unchanged on Node and on Workers. The backend has zero dependencies.
 
 **The local engine is the floor, not a degraded mode.** `CompositeQuestProvider` tries the model and
 falls back to the catalogue on timeout, rate limit, malformed output, or a missing key:
 
 - A generated quest is validated before it is shown. Unknown category, missing description, or a
   duration longer than the time you said you had, and it is thrown away for a real one.
-- With no `OPENAI_API_KEY` set the endpoint returns 503 and the app behaves exactly as before.
+- With no `OPENAI_API_KEY` set the endpoint returns 503 and every quest comes from the catalogue,
+  which is a complete, working app rather than a broken one.
 - Generated quests are labelled `· generated` on the card. The user should never have to guess.
 
-**Why the catalogue is still the default.** The 97 hand-written quests are instant, free and
-guaranteed good. A model asked for a quest on demand will eventually produce filler, and the one
-thing this product cannot afford is a boring suggestion. AI earns its place on the case the
-catalogue genuinely cannot serve: a novel quest for an unusual combination. That is why it is a
-switch rather than the default.
+**Why the catalogue still exists.** The 97 hand-written quests are instant, free and guaranteed
+good, which makes them the right thing to fall back to. A network call can always fail, and a bored
+person pressing a button must never see an error, so the catalogue is the floor under every draw
+rather than a feature you choose.
 
 **Generated questions** are the more interesting half of the integration. Once you have rejected
-enough suggestions the companion's question is generated too. The model writes the question and the
+enough suggestions, the companion's question is written by the model too. The model writes the question and the
 button labels, but every option carries an `action` from a fixed enum
 (`redraw | easier | reconfigure | giveUp`) that the client already implements. The model supplies
 words, the app owns what the words do. Anything it returns is validated: unknown actions dropped,
@@ -315,8 +314,8 @@ with arrow-key navigation.
 | Companion and logo | Hand-written SVG. No 3D, no Lottie, no image assets |
 | Routing | React Router 6 |
 | Persistence | `localStorage`, behind a service |
-| Backend | One serverless function, only when AI quests are on |
-| AI | OpenAI `gpt-4o-mini`, behind the `QuestProvider` interface, off by default |
+| Backend | One Cloudflare Worker, which also serves the static build |
+| AI | OpenAI `gpt-4o-mini`, behind the `QuestProvider` interface |
 
 Four runtime dependencies in total: `react`, `react-dom`, `react-router-dom`, `framer-motion`.
 
@@ -335,43 +334,46 @@ Then open <http://localhost:5173>.
 | `npm run build` | Typecheck, then production build to `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript across `src/`, `api/`, `functions/` and `server/` |
+| `npm run typecheck` | TypeScript across `src/`, `server/`, `worker/` and `api/` |
 
 ## Deployment
 
-The output is a static site. `dist/` contains HTML, CSS, JS and images and nothing else, so the app
-needs no runtime and no environment variables unless you switch AI quests on.
-
-**Cloudflare Pages**
+The app deploys to Cloudflare as a **Worker with static assets**: `worker/index.ts` answers
+`/api/quest` and hands everything else to the built `dist/`.
 
 | Setting | Value |
 | --- | --- |
 | Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
 | Output directory | `dist` |
 
-Functions in `functions/` are picked up automatically. `public/_routes.json` restricts them to
-`/api/*`; without it the Function invocation surface is every request, which is slower and easier to
-get wrong.
+`wrangler.jsonc` is what makes this work, and it must exist. Without a wrangler config, `wrangler
+deploy` falls back to framework auto-detection, recognises Vite, and tries to apply the Cloudflare
+Vite plugin, which requires Vite 6 or newer. On Vite 5 that fails the build with "The version of
+Vite used in the project cannot be automatically configured". Declaring `main` and `assets`
+explicitly means wrangler deploys what the file says and never takes that path.
 
-**Vercel** is detected automatically as a Vite project. `vercel.json` is included and `api/quest.ts`
-is picked up as a function with no extra configuration.
+**Client-side routing** is handled by `assets.not_found_handling: "single-page-application"`, so a
+deep link such as `/history` gets `index.html` rather than a 404.
 
-**Enabling AI quests** is optional. Set `OPENAI_API_KEY` in your host's environment variables. On
-Cloudflare: Workers and Pages, your project, Settings, Variables and Secrets, added as a **Secret**
-rather than a plaintext variable. On Vercel: Project Settings, Environment Variables. For local
-Function testing under `wrangler pages dev`, copy `.env.example` to `.dev.vars`.
+**Note on Pages Functions.** A `functions/` directory is a Cloudflare **Pages** convention. It is
+read by `wrangler pages deploy` and ignored completely by a Worker deployment, so routing here is
+explicit in `worker/index.ts` instead.
+
+**Vercel** is also supported: `api/quest.ts` is an Edge Function over the same `server/` module, and
+`vercel.json` provides the SPA rewrite.
+
+**Set `OPENAI_API_KEY`** or every quest comes from the catalogue. On Cloudflare: Workers and Pages,
+your project, Settings, Variables and Secrets, added as a **Secret** rather than a plaintext
+variable. On Vercel: Project Settings, Environment Variables. For local testing, copy `.env.example`
+to `.dev.vars` and run `npx wrangler dev`.
 
 > Never prefix the key with `VITE_`. Anything named `VITE_*` is inlined into the browser bundle and
 > would publish your key to every visitor.
 
-> Cloudflare hides the Variables and Secrets panel when a project has no server-side code. If it
-> says "Variables cannot be added to a Worker that only has static assets", the `functions/`
-> directory is missing from the deployment.
-
-**Client-side routing.** A deep link such as `/history` must fall back to `index.html` rather than
-404. Cloudflare Pages does this natively for unmatched routes, so no rule is needed there, and
-`vercel.json` covers Vercel. Any other static host needs the equivalent SPA fallback (on Netlify, a
-`_redirects` file containing `/*  /index.html  200`).
+> Cloudflare hides the Variables and Secrets panel while a project has no server-side code. If it
+> says "Variables cannot be added to a Worker that only has static assets", the deployment has no
+> Worker script, so check that `wrangler.jsonc` has `main` set.
 
 ## Roadmap
 

@@ -88,12 +88,6 @@ export function StatsPage() {
           checked={state.settings.confirmCompletion}
           onChange={(value) => updateSettings({ confirmCompletion: value })}
         />
-        <Toggle
-          label="AI-generated quests"
-          hint="Writes a brand-new quest for your exact answers instead of drawing from the 97. Slower, and needs the API endpoint deployed. Falls back to the catalogue if anything goes wrong."
-          checked={state.settings.aiQuests}
-          onChange={(value) => updateSettings({ aiQuests: value })}
-        />
       </div>
 
       <div className="mt-10 border-t border-line pt-6">

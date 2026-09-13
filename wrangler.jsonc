@@ -1,0 +1,21 @@
+{
+  // An explicit config is what stops `wrangler deploy` guessing.
+  //
+  // Without this file wrangler falls back to framework auto-detection, spots Vite,
+  // and tries to apply the Cloudflare Vite plugin, which requires Vite 6 or newer.
+  // That is what failed the build on Vite 5. Declaring `main` and `assets` here
+  // means wrangler deploys exactly what we say and never runs that path.
+  "name": "sidequest",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Client-side routing: a deep link with no file behind it gets index.html
+    // rather than a 404. This replaces what Pages did natively.
+    "not_found_handling": "single-page-application"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

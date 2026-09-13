@@ -6,12 +6,14 @@ export { AIQuestProvider } from './aiQuestProvider';
 export { LocalQuestProvider } from './localQuestProvider';
 
 /**
- * Routes each request to the AI provider or the catalogue, and guarantees an answer.
+ * Asks the model first, and guarantees an answer either way.
  *
- * The local engine is not a degraded mode, it is the default and the floor. If the
- * model is slow, rate-limited, returns nonsense, or the endpoint is not deployed at
- * all, the user still gets a real quest instead of an error. A bored person pressing
- * a button should never be told to try again later.
+ * Every draw goes to the model, so the catalogue is no longer something you fall
+ * back *to* by choice: it is the floor under a network call that can always fail.
+ * If the model is slow, rate-limited, returns nonsense, or the endpoint is not
+ * deployed at all, the user still gets a real quest instead of an error. A bored
+ * person pressing a button should never be told to try again later, and they
+ * should never be able to tell which of the two answered.
  */
 class CompositeQuestProvider implements QuestProvider {
   readonly id = 'composite';
@@ -22,8 +24,6 @@ class CompositeQuestProvider implements QuestProvider {
   ) {}
 
   async suggest(request: QuestRequest): Promise<QuestSuggestion> {
-    if (!request.preferAi) return this.local.suggest(request);
-
     try {
       return await this.ai.suggest(request);
     } catch (error) {

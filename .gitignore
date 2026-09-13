@@ -16,6 +16,9 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+# Cloudflare's local secrets file for `wrangler dev`. Holds the real API key.
+.dev.vars
+.dev.vars.*
 
 # Editors
 .vscode/*

@@ -17,5 +17,5 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["node"]
   },
-  "include": ["server", "api", "functions"]
+  "include": ["server", "api", "worker"]
 }

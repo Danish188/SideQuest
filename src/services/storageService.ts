@@ -13,9 +13,6 @@ interface PersistedState extends QuestState {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   confirmCompletion: true,
-  // Off by default: it costs money per quest and needs a deployed endpoint, so it
-  // is something you switch on, never something that switches itself on for you.
-  aiQuests: false,
 };
 
 export const EMPTY_STATE: QuestState = {
@@ -84,10 +81,6 @@ function reconcile(stored: Partial<PersistedState> | null): QuestState {
         typeof stored.settings?.confirmCompletion === 'boolean'
           ? stored.settings.confirmCompletion
           : DEFAULT_SETTINGS.confirmCompletion,
-      aiQuests:
-        typeof stored.settings?.aiQuests === 'boolean'
-          ? stored.settings.aiQuests
-          : DEFAULT_SETTINGS.aiQuests,
     },
   };
 }
